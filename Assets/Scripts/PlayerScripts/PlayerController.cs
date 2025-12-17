@@ -234,8 +234,8 @@ public class PlayerController : MonoBehaviour
         JumpGravity();
     }
 
-        void Jump() {
-        rb.velocity = new Vector3(0f, jumpForce, 0f);                    // Vector3.up * (jumpForce) ; 
+    void Jump() { 
+        rb.velocity = new Vector3(rb.velocity.x, jumpForce, rb.velocity.z);                    // Vector3.up * (jumpForce) ; 
         jumpInput = false;
         lastGroundedPos = transform.position;
         Debug.Log(lastGroundedPos);
