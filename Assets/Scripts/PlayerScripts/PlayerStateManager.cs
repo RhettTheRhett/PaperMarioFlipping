@@ -1,0 +1,173 @@
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using Cinemachine;
+using UnityEngine;
+
+public class PlayerStateManager : MonoBehaviour
+{
+    #region Variables
+
+    
+
+    
+    [Header("States")]
+    PlayerBaseState currentState;
+    public PlayerIdleState idleState = new PlayerIdleState();
+    public PlayerFlatMoveState flatMoveState = new PlayerFlatMoveState();
+    public PlayerFlippedMoveState flippedMoveState =  new PlayerFlippedMoveState();
+    public PlayerFlippingState flippingState =  new PlayerFlippingState();
+    public PlayerJumpState jumpState = new PlayerJumpState();
+    
+    [Header("Jump")]
+    public float jumpForce = 9f;
+    public float gravityMultiplier = 1.5f;
+    public float fallGravity;
+    public float normalGravity;
+
+    public float coyoteTime = 0.2f;
+    public float coyoteTimeCounter;
+
+    public float jumpBufferTime = 0.2f;
+    public float jumpBufferCounter;
+
+    [SerializeField] public bool jumpInput;
+    
+    [Header("Ground Check")]
+    public Transform groundCheck;
+    public LayerMask ground;
+    public float rayLength = 0.3f;
+    public Vector3 boxSize;
+    public bool isGrounded = true;
+    public Vector3 lastGroundedPos;
+    public bool checkLastPos = false;
+    
+    [Header("General")]
+    public Rigidbody rb;
+    
+    [Header("Flip Flop")]
+    public bool facingRight;
+    public bool currentlyFlipping = false;
+    public float flipSpeed = 7f;
+    public Quaternion flipLeftFlat = Quaternion.Euler(0f, -180f, 0f);
+    public Quaternion flipRightFlat = Quaternion.Euler(0f, 0f, 0f);
+
+    public Quaternion flipLeftFlip = Quaternion.Euler(0f, -90f, 0f);
+    public Quaternion flipRightFlip = Quaternion.Euler(0f, -270f, 0f);
+
+    public Quaternion flipView = Quaternion.Euler(0f, -90f, 0f);
+
+    [Header("Movement")]
+    public float moveSpeed = 7f;
+    public Vector2 moveInput;
+    
+    [Header("Camera")]
+    public Camera cam;
+    [SerializeField] private CinemachineVirtualCamera flatCam;
+    [SerializeField] private CinemachineVirtualCamera flipCam;
+
+    public bool is2d = true;
+    [SerializeField] public Transform camPos1;
+    [SerializeField] public Transform camPos2;
+    #endregion
+    
+    private void Awake()
+    {
+        rb = GetComponent<Rigidbody>();
+        fallGravity = Physics.gravity.y * gravityMultiplier;
+        normalGravity = Physics.gravity.y - 10;
+    }
+
+    void Start()
+    {
+        currentState = idleState;
+        
+        currentState.EnterState(this);
+    }
+    
+    void Update()
+    {
+        currentState.UpdateState(this);
+        
+        
+        if (Input.GetKeyDown(KeyCode.Space)) 
+            jumpBufferCounter = jumpBufferTime;
+        else 
+            jumpBufferCounter -= Time.deltaTime;
+
+        // Trigger Jump State
+        if (jumpBufferCounter > 0 && coyoteTimeCounter > 0)
+        {
+            if (currentState != jumpState) // Don't restart if already jumping
+            {
+                SwitchState(jumpState);
+            }
+        }
+        
+        CheckPlayerFalling(this);
+    }
+
+    void FixedUpdate()
+    {
+        currentState.FixedUpdateState(this);
+        Debug.Log(currentState);
+    }
+
+    void OnCollisionEnter(Collision collision)
+    {
+        currentState.OnCollisionEnter(this, collision);
+    }
+
+    public void SwitchState(PlayerBaseState state)
+    {
+        currentState.ExitState(this);
+        currentState = state;
+        state.EnterState(this);
+    }
+    
+    void CheckPlayerFalling(PlayerStateManager player) {
+        
+        if (Physics.CheckBox(player.groundCheck.position, player.boxSize, player.transform.rotation, player.ground)) {
+            player.isGrounded = true;
+        } else {
+            player.isGrounded = false;
+        }
+        
+        if (player.isGrounded) {
+            player.coyoteTimeCounter = player.coyoteTime;
+        } else {
+            player.coyoteTimeCounter -= Time.deltaTime;
+        }
+
+        //lets the player jump if grounded and spcae is pressed
+        //changed to lets the player jump if jump buffer is > 0 and coyotetimer counter is >0
+        if (player.jumpBufferCounter > 0 && player.coyoteTimeCounter > 0f) {
+            player.jumpInput = true;
+            player.coyoteTimeCounter = 0f;
+        }
+        
+        if (!player.isGrounded && player.checkLastPos) {
+            player.checkLastPos = false;
+            if (player.facingRight) {
+                player.lastGroundedPos = new Vector3(player.transform.position.x + player.transform.localScale.x, player.transform.position.y, player.transform.position.z);
+            } else {
+                player.lastGroundedPos = new Vector3(player.transform.position.x - player.transform.localScale.x, player.transform.position.y, player.transform.position.z);
+            }
+            
+            //Debug.Log(player.lastGroundedPos);
+        } else if (player.isGrounded) {
+            player.checkLastPos = true;
+        }
+
+    }
+
+    void SavePlayer(PlayerStateManager player) {
+        player.transform.position = player.lastGroundedPos;
+    }
+    
+    private void OnDrawGizmos() {
+        
+        Gizmos.DrawWireCube(groundCheck.transform.position, boxSize );
+        
+    }
+}

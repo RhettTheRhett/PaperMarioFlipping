@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -27,11 +28,11 @@ public class PlayerController : MonoBehaviour
     public LayerMask ground;
     public float rayLength = 0.3f;
     public Vector3 boxSize;
-    [SerializeField] bool isGrounded = true;
-    private Vector3 lastGroundedPos;
-    private bool checkLastPos = false;
+    public bool isGrounded = true;
+    public Vector3 lastGroundedPos;
+    public bool checkLastPos = false;
 
-    private float checkDistance = 1.75f;
+    private float checkDistance = 2;
 
     Rigidbody rb;
 
@@ -65,22 +66,18 @@ public class PlayerController : MonoBehaviour
 
         fallGravity = Physics.gravity.y * gravityMultiplier;
         normalGravity = Physics.gravity.y - 10;
+    }   
+
+    private void Update()
+    {
+        handleMove();
+        handleJump();
     }
 
-
     private void FixedUpdate() {
-
-        handleJump();
-
-        handleMove();
-
         flipCamera();
-
         flipPlayer();
-
         CheckPlayerFalling();
-
-
     }
 
     private void OnTriggerEnter(Collider other) {
@@ -105,6 +102,7 @@ public class PlayerController : MonoBehaviour
 
                 rb.velocity = new Vector3(moveInput.x * moveSpeed, rb.velocity.y, 0);
 
+                //move this to playerflippingstate
             if (!IsObstacleInZAxis()) {
                 rb.position = new Vector3(rb.position.x, rb.position.y, 0);
             }
@@ -161,6 +159,7 @@ public class PlayerController : MonoBehaviour
         ///////////////////////////////////////////////////
     }
 
+    //moe to playerflippingstate
     private void flipCamera() {
         if (Input.GetKeyDown(KeyCode.E) && isGrounded) {
             if (is2d) {
@@ -288,8 +287,8 @@ public class PlayerController : MonoBehaviour
     }
 
     private void OnDrawGizmos() {
-        Gizmos.DrawWireCube(groundCheck.transform.position, boxSize );
-        /*
+        //Gizmos.DrawWireCube(groundCheck.transform.position, boxSize );
+        
         //float checkDistance = 1.75f;  
         Vector3 frontCheckPos = transform.position + Vector3.forward * checkDistance;
         Vector3 backCheckPos = transform.position - Vector3.forward * checkDistance;
@@ -299,7 +298,7 @@ public class PlayerController : MonoBehaviour
         Gizmos.DrawWireCube(frontCheckPos, boxSize);
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(backCheckPos, boxSize);
-        */
+        
     }
 
 }
