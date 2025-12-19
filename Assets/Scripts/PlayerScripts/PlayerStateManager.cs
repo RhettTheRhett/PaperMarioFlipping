@@ -7,12 +7,11 @@ using UnityEngine;
 public class PlayerStateManager : MonoBehaviour
 {
     #region Variables
-
     
-
     
     [Header("States")]
-    PlayerBaseState currentState;
+    public PlayerBaseState currentState;
+    public PlayerBaseState  previousState;
     public PlayerIdleState idleState = new PlayerIdleState();
     public PlayerFlatMoveState flatMoveState = new PlayerFlatMoveState();
     public PlayerFlippedMoveState flippedMoveState =  new PlayerFlippedMoveState();
@@ -44,6 +43,8 @@ public class PlayerStateManager : MonoBehaviour
     
     [Header("General")]
     public Rigidbody rb;
+    public Transform playerHolder;
+    public bool is2d = true;
     
     [Header("Flip Flop")]
     public bool facingRight;
@@ -60,15 +61,19 @@ public class PlayerStateManager : MonoBehaviour
     [Header("Movement")]
     public float moveSpeed = 7f;
     public Vector2 moveInput;
+    public float checkDistance = 2;
     
+    /*
     [Header("Camera")]
     public Camera cam;
     [SerializeField] private CinemachineVirtualCamera flatCam;
     [SerializeField] private CinemachineVirtualCamera flipCam;
 
-    public bool is2d = true;
+    
     [SerializeField] public Transform camPos1;
     [SerializeField] public Transform camPos2;
+    */
+    
     #endregion
     
     private void Awake()
@@ -90,6 +95,7 @@ public class PlayerStateManager : MonoBehaviour
         currentState.UpdateState(this);
         
         
+        //Debug.Log(coyoteTimeCounter);
         if (Input.GetKeyDown(KeyCode.Space)) 
             jumpBufferCounter = jumpBufferTime;
         else 
@@ -103,23 +109,29 @@ public class PlayerStateManager : MonoBehaviour
                 SwitchState(jumpState);
             }
         }
-        
+        //jumpState.JumpGravity(this);
         CheckPlayerFalling(this);
     }
 
     void FixedUpdate()
     {
         currentState.FixedUpdateState(this);
-        Debug.Log(currentState);
+        
     }
 
     void OnCollisionEnter(Collision collision)
     {
         currentState.OnCollisionEnter(this, collision);
+        if (collision.gameObject.CompareTag("OutOfBounds"))
+        {
+            SavePlayer(this);
+        }
     }
 
     public void SwitchState(PlayerBaseState state)
     {
+        Debug.Log(currentState);
+        previousState = currentState;
         currentState.ExitState(this);
         currentState = state;
         state.EnterState(this);
@@ -167,7 +179,15 @@ public class PlayerStateManager : MonoBehaviour
     
     private void OnDrawGizmos() {
         
-        Gizmos.DrawWireCube(groundCheck.transform.position, boxSize );
+        Gizmos.DrawWireCube(groundCheck.transform.position, this.boxSize );
         
+        Vector3 frontCheckPos = transform.position + Vector3.forward * checkDistance;
+        Vector3 backCheckPos = transform.position - Vector3.forward * checkDistance;
+        Vector3 boxSize = new Vector3(1, 1, checkDistance * 2);
+
+        Gizmos.color = Color.red;  
+        Gizmos.DrawWireCube(frontCheckPos, boxSize);
+        Gizmos.color = Color.blue;
+        Gizmos.DrawWireCube(backCheckPos, boxSize);
     }
 }

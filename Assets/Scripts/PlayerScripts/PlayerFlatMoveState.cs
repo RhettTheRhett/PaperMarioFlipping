@@ -28,7 +28,14 @@ public class PlayerFlatMoveState : PlayerBaseState
         {
             player.SwitchState(player.jumpState);
         }
+        else if (Input.GetKey(KeyCode.E) && player.isGrounded)
+        {
+            player.SwitchState(player.flippingState);
+        }
 
+        if (!IsObstacleInZAxis(player) && !player.is2d) {
+            player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
+        }
     }
 
     public override void FixedUpdateState(PlayerStateManager player)
@@ -83,6 +90,21 @@ public class PlayerFlatMoveState : PlayerBaseState
             player.transform.rotation = targetRotation; 
             player.currentlyFlipping = false;
         }
+    }
+    
+    private bool IsObstacleInZAxis(PlayerStateManager player) {
+        //float checkDistance = 1.75f;  
+        Vector3 frontCheckPos = player.transform.position + Vector3.forward * player.checkDistance;
+        Vector3 backCheckPos = player.transform.position - Vector3.forward * player.checkDistance;
+
+        // Check for obstacles in front or behind the player
+        bool frontBlocked = Physics.CheckBox(frontCheckPos, player.transform.localScale , Quaternion.identity, player.ground);
+        bool backBlocked = Physics.CheckBox(backCheckPos, player.transform.localScale , Quaternion.identity, player.ground);
+
+        Debug.Log(frontBlocked);
+        Debug.Log(backBlocked);
+
+        return frontBlocked || backBlocked;
     }
     
 }

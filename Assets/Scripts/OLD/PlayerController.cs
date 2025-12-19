@@ -60,7 +60,7 @@ public class PlayerController : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        Camera.main.orthographic = true;
+        //Camera.main.orthographic = true;
         rb = GetComponent<Rigidbody>();
         rb.constraints = RigidbodyConstraints.FreezeRotationZ | RigidbodyConstraints.FreezeRotationX;
 
@@ -83,7 +83,7 @@ public class PlayerController : MonoBehaviour
     private void OnTriggerEnter(Collider other) {
         if (other.CompareTag("OutOfBounds")) {
             
-            Invoke("SavePlayer",1);
+            Invoke(nameof(SavePlayer),1);
             //Debug.Log("saved");
            
         }

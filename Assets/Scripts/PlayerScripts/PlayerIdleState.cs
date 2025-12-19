@@ -21,14 +21,23 @@ public class PlayerIdleState : PlayerBaseState
 
         if (moveX != 0)
         {
-            player.SwitchState(player.flatMoveState);
+            switch (player.is2d)
+            {
+                case true:
+                    player.SwitchState(player.flatMoveState);
+                    break;
+                case false:
+                    player.SwitchState(player.flippedMoveState);
+                    break;
+            }
+            
         }
         //is the player trying to jump from idle
         else if (Input.GetKey(KeyCode.Space) && player.isGrounded)
         {
             player.SwitchState(player.jumpState);
         }
-        else if (Input.GetKey(KeyCode.E))
+        else if (Input.GetKey(KeyCode.E) && player.isGrounded)
         {
             player.SwitchState(player.flippingState);
         }
