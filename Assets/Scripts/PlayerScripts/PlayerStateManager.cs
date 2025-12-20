@@ -1,7 +1,3 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Cinemachine;
 using UnityEngine;
 
 public class PlayerStateManager : MonoBehaviour
@@ -53,8 +49,8 @@ public class PlayerStateManager : MonoBehaviour
     public Quaternion flipLeftFlat = Quaternion.Euler(0f, -180f, 0f);
     public Quaternion flipRightFlat = Quaternion.Euler(0f, 0f, 0f);
 
-    public Quaternion flipLeftFlip = Quaternion.Euler(0f, -90f, 0f);
-    public Quaternion flipRightFlip = Quaternion.Euler(0f, -270f, 0f);
+    public Quaternion flipLeftFlip = Quaternion.Euler(0f, 270f, 0f);
+    public Quaternion flipRightFlip = Quaternion.Euler(0f, 90f, 0f);
 
     public Quaternion flipView = Quaternion.Euler(0f, -90f, 0f);
 
@@ -130,7 +126,7 @@ public class PlayerStateManager : MonoBehaviour
 
     public void SwitchState(PlayerBaseState state)
     {
-        Debug.Log(currentState);
+        Debug.Log($"{currentState} → {state}");
         previousState = currentState;
         currentState.ExitState(this);
         currentState = state;
@@ -175,6 +171,21 @@ public class PlayerStateManager : MonoBehaviour
 
     void SavePlayer(PlayerStateManager player) {
         player.transform.position = player.lastGroundedPos;
+    }
+    
+    public bool IsObstacleInZAxis(PlayerStateManager player) {
+        //float checkDistance = 1.75f;  
+        Vector3 frontCheckPos = player.transform.position + Vector3.forward * player.checkDistance;
+        Vector3 backCheckPos = player.transform.position - Vector3.forward * player.checkDistance;
+
+        // Check for obstacles in front or behind the player
+        bool frontBlocked = Physics.CheckBox(frontCheckPos, player.transform.localScale , Quaternion.identity, player.ground);
+        bool backBlocked = Physics.CheckBox(backCheckPos, player.transform.localScale , Quaternion.identity, player.ground);
+
+        Debug.Log(frontBlocked);
+        Debug.Log(backBlocked);
+
+        return frontBlocked || backBlocked;
     }
     
     private void OnDrawGizmos() {

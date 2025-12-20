@@ -12,6 +12,8 @@ public class PlayerFlippingState : PlayerBaseState
     public override void EnterState(PlayerStateManager player)
     {
         //player.StartCoroutine(FlipRoutine(player));
+        player.rb.velocity = Vector3.zero;
+        
         player.currentlyFlipping = true;
 
         startRotation = player.playerHolder.rotation;

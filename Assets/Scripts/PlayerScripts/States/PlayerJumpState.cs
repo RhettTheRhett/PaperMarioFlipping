@@ -17,26 +17,47 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void UpdateState(PlayerStateManager player)
     {
-        //handleJump(player);
-        //JumpGravity(player);
-        if (player.isGrounded)
-        {
-            if (Mathf.Abs(player.rb.velocity.x) > 0.1f)
-                player.SwitchState(player.flatMoveState);
-            else
-                player.SwitchState(player.idleState);
-        }
+        if (!player.isGrounded) return;
+
+    if (player.is2d)
+    {
+        if (Mathf.Abs(player.rb.velocity.x) > 0.1f)
+            player.SwitchState(player.flatMoveState);
+        else
+            player.SwitchState(player.idleState);
+    }
+    else
+    {
+        if (player.rb.velocity.magnitude > 0.1f)
+            player.SwitchState(player.flippedMoveState);
+        else
+            player.SwitchState(player.idleState);
+    }
     }
 
     public override void FixedUpdateState(PlayerStateManager player)
     {
-        float moveX = Input.GetAxis("Horizontal");
+        if (player.is2d)
+        {
+            float moveX = Input.GetAxis("Horizontal");
 
-        player.rb.velocity = new Vector3(
-            moveX * player.moveSpeed,
-            player.rb.velocity.y,
-            0
-        );
+            player.rb.velocity = new Vector3(
+                moveX * player.moveSpeed,
+                player.rb.velocity.y,
+                0
+            );
+        }
+        else
+        {
+            float moveX = Input.GetAxis("Vertical");
+            float moveZ = -Input.GetAxis("Horizontal");
+
+            player.rb.velocity = new Vector3(
+                moveX * player.moveSpeed,
+                player.rb.velocity.y,
+                moveZ * player.moveSpeed
+            );
+        }
     }
 
     public override void OnCollisionEnter(PlayerStateManager player, Collision collision)

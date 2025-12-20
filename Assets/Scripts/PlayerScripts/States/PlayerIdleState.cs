@@ -18,8 +18,13 @@ public class PlayerIdleState : PlayerBaseState
     {
         //is the player starting to move while flat
         float moveX = Input.GetAxis("Horizontal");
-
-        if (moveX != 0)
+        float moveY = Input.GetAxis("Vertical");
+        
+        if (!player.IsObstacleInZAxis(player) && player.is2d) {
+            player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
+        }
+        
+        if (moveX != 0 || moveY != 0)
         {
             switch (player.is2d)
             {

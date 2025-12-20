@@ -1,14 +1,9 @@
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using Unity.VisualScripting;
-using UnityEditor;
 using UnityEngine;
 
 public class MoveCamera : MonoBehaviour
 {
     public Transform target;
-    public Camera camera;
+    public new Camera camera;
     
     public float boundX = 2.0f, boundY = 2.0f, boundZ = 2.0f;
     
@@ -17,6 +12,7 @@ public class MoveCamera : MonoBehaviour
     
     private readonly Vector3 vec0 = Vector3.zero;
     public Vector3 offset = new Vector3(0,10,-10);
+    public Vector3 flippedOffset = new Vector3(-5,2,0);
 
     public GameObject player;
     public PlayerStateManager playerStateManager;
@@ -47,6 +43,7 @@ public class MoveCamera : MonoBehaviour
     {
         camera.orthographic = true;
         Vector3 delta = vec0;
+        Quaternion lookRotation = Quaternion.Euler(0f,0f,0f);
         //x
         float dx = target.position.x - transform.position.x;
         if (dx > boundX || dx < -boundX)
@@ -87,8 +84,9 @@ public class MoveCamera : MonoBehaviour
             }
         }
         
-        targetPos = transform.position + delta;
+        targetPos = transform.position + delta + offset;
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, smoothSpeed * Time.deltaTime);
     }
 
     private void flippedCam()
@@ -96,6 +94,7 @@ public class MoveCamera : MonoBehaviour
         
         camera.orthographic = false;
         Vector3 delta = vec0;
+        Quaternion lookRotation = Quaternion.Euler(25f,90f,0f);
         //x
         float dx = target.position.x - transform.position.x;
         if (dx > boundX || dx < -boundX)
@@ -136,7 +135,8 @@ public class MoveCamera : MonoBehaviour
             }
         }
         
-        targetPos = transform.position + delta + offset;
+        targetPos = transform.position + delta + flippedOffset;
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
+        transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, smoothSpeed * Time.deltaTime);
     }
 }
