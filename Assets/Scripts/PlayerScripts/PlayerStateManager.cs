@@ -40,6 +40,11 @@ public class PlayerStateManager : MonoBehaviour
     [Header("General")]
     public Rigidbody rb;
     public Transform playerHolder;
+
+    [Header("World State")] 
+    public GameObject worldStateManagerObject;
+    public WorldStateManager worldStateManager;
+    public WorldState currentWorldState;
     public bool is2d = true;
     
     [Header("Flip Flop")]
@@ -74,6 +79,9 @@ public class PlayerStateManager : MonoBehaviour
     
     private void Awake()
     {
+        worldStateManagerObject =  GameObject.Find("WorldStateManager");
+        worldStateManager = worldStateManagerObject.GetComponent<WorldStateManager>();
+        worldStateManager.ChangeWorldState(WorldState.Flat2d);
         rb = GetComponent<Rigidbody>();
         fallGravity = Physics.gravity.y * gravityMultiplier;
         normalGravity = Physics.gravity.y - 10;
@@ -90,6 +98,7 @@ public class PlayerStateManager : MonoBehaviour
     {
         currentState.UpdateState(this);
         
+        currentWorldState = worldStateManager.GetWorldState();
         
         //Debug.Log(coyoteTimeCounter);
         if (Input.GetKeyDown(KeyCode.Space)) 
@@ -104,6 +113,15 @@ public class PlayerStateManager : MonoBehaviour
             {
                 SwitchState(jumpState);
             }
+        }
+
+        if (currentWorldState == WorldState.Flipped3d)
+        {
+            is2d = false;
+        }
+        else if (currentWorldState == WorldState.Flat2d)
+        {
+            is2d = true;
         }
         //jumpState.JumpGravity(this);
         CheckPlayerFalling(this);
@@ -126,6 +144,7 @@ public class PlayerStateManager : MonoBehaviour
 
     public void SwitchState(PlayerBaseState state)
     {
+        
         Debug.Log($"{currentState} → {state}");
         previousState = currentState;
         currentState.ExitState(this);
@@ -189,7 +208,7 @@ public class PlayerStateManager : MonoBehaviour
     }
     
     private void OnDrawGizmos() {
-        
+        /*
         Gizmos.DrawWireCube(groundCheck.transform.position, this.boxSize );
         
         Vector3 frontCheckPos = transform.position + Vector3.forward * checkDistance;
@@ -200,5 +219,6 @@ public class PlayerStateManager : MonoBehaviour
         Gizmos.DrawWireCube(frontCheckPos, boxSize);
         Gizmos.color = Color.blue;
         Gizmos.DrawWireCube(backCheckPos, boxSize);
+        */
     }
 }

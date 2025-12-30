@@ -23,8 +23,16 @@ public class PlayerFlippingState : PlayerBaseState
 
         targetRotation = startRotation * Quaternion.Euler(0f, angle, 0f);
 
-        // Toggle dimension immediately (logic), visuals catch up
-        player.is2d = !player.is2d;
+        // Toggle dimension 
+        //player.is2d = !player.is2d;
+        if (!player.is2d)
+        {
+           player.worldStateManager.ChangeWorldState(WorldState.Flipped3d); 
+        }
+        else
+        {
+            player.worldStateManager.ChangeWorldState(WorldState.Flat2d); 
+        }
         
     }
 
@@ -60,15 +68,4 @@ public class PlayerFlippingState : PlayerBaseState
     {
         
     }
-    
-    IEnumerator FlipRoutine(PlayerStateManager player)
-    {
-        yield return new WaitForSeconds(flipDuration);
-
-        player.is2d = !player.is2d;
-
-        player.SwitchState(player.previousState);
-    }
-    
-    
 }

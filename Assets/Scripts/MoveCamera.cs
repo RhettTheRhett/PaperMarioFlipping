@@ -28,12 +28,14 @@ public class MoveCamera : MonoBehaviour
     {
         if (playerStateManager != null)
         {
-            if (playerStateManager.is2d)
+            if (playerStateManager.currentWorldState == WorldState.Flat2d)
             {
+                Debug.Log("Flat2d");
                 flatCam();
             }
-            else
+            else if (playerStateManager.currentWorldState == WorldState.Flipped3d)
             {
+                Debug.Log("Flipped3d");
                 flippedCam();
             }
         }

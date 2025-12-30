@@ -21,7 +21,7 @@ public class PlayerIdleState : PlayerBaseState
         float moveY = Input.GetAxis("Vertical");
         
         if (!player.IsObstacleInZAxis(player) && player.is2d) {
-            player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
+            //player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
         }
         
         if (moveX != 0 || moveY != 0)
@@ -29,9 +29,11 @@ public class PlayerIdleState : PlayerBaseState
             switch (player.is2d)
             {
                 case true:
+                    Debug.Log(player.is2d);
                     player.SwitchState(player.flatMoveState);
                     break;
                 case false:
+                    Debug.Log(player.is2d);
                     player.SwitchState(player.flippedMoveState);
                     break;
             }
@@ -45,6 +47,15 @@ public class PlayerIdleState : PlayerBaseState
         else if (Input.GetKey(KeyCode.E) && player.isGrounded)
         {
             player.SwitchState(player.flippingState);
+            if (player.currentWorldState == WorldState.Flipped3d)
+            {
+                player.worldStateManager.ChangeWorldState(WorldState.Flat2d);
+            }
+            else if (player.currentWorldState == WorldState.Flat2d)
+            {
+                player.worldStateManager.ChangeWorldState(WorldState.Flipped3d);
+            }
+            
         }
     }
 

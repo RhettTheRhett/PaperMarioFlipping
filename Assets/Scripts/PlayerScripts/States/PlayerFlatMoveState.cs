@@ -34,7 +34,7 @@ public class PlayerFlatMoveState : PlayerBaseState
         }
 
         if (!player.IsObstacleInZAxis(player) && player.is2d) {
-            player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
+            //player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
         }
     }
 
