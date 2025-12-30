@@ -19,7 +19,7 @@ public class QuadraticCurve : MonoBehaviour
 
 
 
-
+/*
 private void OnDrawGizmos() {
         if (A == null || B == null || Control == null ) {
             return;
@@ -30,4 +30,5 @@ private void OnDrawGizmos() {
         }
 
     }
+*/
 }

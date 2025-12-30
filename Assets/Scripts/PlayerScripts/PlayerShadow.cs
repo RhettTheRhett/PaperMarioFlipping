@@ -17,7 +17,7 @@ public class PlayerShadow : MonoBehaviour
 
     void MoveShadow() {
     RaycastHit hit;
-        if (shadow != null) {
+        if (shadow) {
             if (Physics.Raycast(player.transform.position, Vector3.down, out hit)) {
                 transform.position = hit.point + shadowOffset;
 

@@ -10,11 +10,13 @@ public class CoinPickup : MonoBehaviour {
     private PlayerController playerController;
 
     private void Start() {
-        playerController = GetComponent<PlayerController>();
+        
     }
 
     private void OnTriggerEnter(Collider other) {
-
+        
+        playerController = GetComponent<PlayerController>();
+        
         //character flipped and coin flipped
         if (playerController.is2d && other.CompareTag("CoinFlat")) {
             Destroy(other.gameObject);
