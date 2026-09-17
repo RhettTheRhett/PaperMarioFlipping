@@ -15,6 +15,8 @@ public class SquigletAI : MonoBehaviour
 
     [Header("Attack Timing")]
     [SerializeField, Min(0f)] private float startleDuration = 0.6f;
+    [Tooltip("Seconds after starting the shoot animation before creating the coconut.")]
+    [SerializeField, Min(0f)] private float shotDelay;
     [SerializeField, Min(0.1f)] private float timeBetweenShots = 1.5f;
 
     [Header("Projectile")]
@@ -32,6 +34,7 @@ public class SquigletAI : MonoBehaviour
     private PlayerHealth player;
     private State state;
     private float timer;
+    private float pendingShotTimer = -1f;
 
 #if UNITY_EDITOR
     private void Reset()
@@ -66,12 +69,23 @@ public class SquigletAI : MonoBehaviour
         if (!health.IsAlive) return;
         if (!dimension.IsInteractive)
         {
+            pendingShotTimer = -1f;
             if (state != State.Patrol) ResumePatrol();
             return;
         }
         if (player == null) player = FindObjectOfType<PlayerHealth>();
         if (player == null || !player.IsAlive) return;
         if (stun.IsStunned) return;
+
+        if (pendingShotTimer >= 0f)
+        {
+            pendingShotTimer -= Time.deltaTime;
+            if (pendingShotTimer <= 0f)
+            {
+                pendingShotTimer = -1f;
+                ReleaseCoconut();
+            }
+        }
 
         switch (state)
         {
@@ -120,9 +134,16 @@ public class SquigletAI : MonoBehaviour
 
     private void Fire()
     {
-        timer = timeBetweenShots;
         enemyAnimator.PlayAttack();
-        if (!releaseFromAnimationEvent) ReleaseCoconut();
+        if (releaseFromAnimationEvent)
+        {
+            timer = timeBetweenShots;
+            return;
+        }
+
+        timer = shotDelay + timeBetweenShots;
+        if (shotDelay <= 0f) ReleaseCoconut();
+        else pendingShotTimer = shotDelay;
     }
 
     // Add an Animation Event with this exact function name to choose the
