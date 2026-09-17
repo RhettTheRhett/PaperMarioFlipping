@@ -54,6 +54,7 @@ public class BatChase : MonoBehaviour
 
 
     void Update() {
+        if (batTransform == null || playerTransform == null) return;
         distance = Vector3.Distance(batTransform.position, playerTransform.position);
         if (batCanMove) {
             StartCoroutine(moveBat());

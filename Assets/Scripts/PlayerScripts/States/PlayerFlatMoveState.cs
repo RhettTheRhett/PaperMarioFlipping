@@ -19,23 +19,15 @@ public class PlayerFlatMoveState : PlayerBaseState
         player.moveInput.x = Input.GetAxis("Horizontal");
         player.moveInput.y = Input.GetAxis("Vertical");
 
-        if (player.rb.velocity.x == 0 && !player.currentlyFlipping )
+        if (Mathf.Abs(player.moveInput.x) < 0.01f )
         {
             player.SwitchState(player.idleState);
         }
         //is the player trying to jump from idle
-        else if (Input.GetKey(KeyCode.Space) && player.isGrounded)
-        {
-            player.SwitchState(player.jumpState);
-        }
-        else if (Input.GetKey(KeyCode.E) && player.isGrounded)
-        {
-            player.SwitchState(player.flippingState);
-        }
 
-        if (!player.IsObstacleInZAxis(player) && player.is2d) {
-            //player.rb.position = new Vector3(player.rb.position.x, player.rb.position.y, 0);
-        }
+
+
+
     }
 
     public override void FixedUpdateState(PlayerStateManager player)
@@ -80,7 +72,7 @@ public class PlayerFlatMoveState : PlayerBaseState
         }
 
         
-        player.currentlyFlipping = true;
+
 
         player.transform.rotation = Quaternion.Slerp(player.transform.rotation, targetRotation, player.flipSpeed * Time.deltaTime);
 
@@ -88,7 +80,7 @@ public class PlayerFlatMoveState : PlayerBaseState
         if (Quaternion.Angle(player.transform.rotation, targetRotation) < 0.5f)
         {
             player.transform.rotation = targetRotation; 
-            player.currentlyFlipping = false;
+
         }
     }
     

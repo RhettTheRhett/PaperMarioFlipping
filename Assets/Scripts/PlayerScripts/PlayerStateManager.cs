@@ -1,5 +1,6 @@
 using UnityEngine;
 
+[RequireComponent(typeof(PlayerDimension))]
 public class PlayerStateManager : MonoBehaviour
 {
     #region Variables
@@ -50,6 +51,8 @@ public class PlayerStateManager : MonoBehaviour
     [Header("Flip Flop")]
     public bool facingRight;
     public bool currentlyFlipping = false;
+    public float flipDuration = 0.35f;
+    public PlayerDimension dimension;
     public float flipSpeed = 7f;
     public Quaternion flipLeftFlat = Quaternion.Euler(0f, -180f, 0f);
     public Quaternion flipRightFlat = Quaternion.Euler(0f, 0f, 0f);
@@ -63,6 +66,10 @@ public class PlayerStateManager : MonoBehaviour
     public float moveSpeed = 7f;
     public Vector2 moveInput;
     public float checkDistance = 2;
+    [SerializeField, Min(0f)] private float knockbackDeceleration = 28f;
+    private float movementLockedUntil;
+
+    public bool IsMovementLocked { get { return Time.time < movementLockedUntil; } }
     
     /*
     [Header("Camera")]
@@ -79,10 +86,12 @@ public class PlayerStateManager : MonoBehaviour
     
     private void Awake()
     {
-        worldStateManagerObject =  GameObject.Find("WorldStateManager");
+        worldStateManagerObject = WorldStateManager.Get().gameObject;
         worldStateManager = worldStateManagerObject.GetComponent<WorldStateManager>();
         worldStateManager.ChangeWorldState(WorldState.Flat2d);
         rb = GetComponent<Rigidbody>();
+        dimension = GetComponent<PlayerDimension>();
+        if (dimension == null) dimension = gameObject.AddComponent<PlayerDimension>();
         fallGravity = Physics.gravity.y * gravityMultiplier;
         normalGravity = Physics.gravity.y - 10;
     }
@@ -96,9 +105,20 @@ public class PlayerStateManager : MonoBehaviour
     
     void Update()
     {
-        currentState.UpdateState(this);
-        
         currentWorldState = worldStateManager.GetWorldState();
+        is2d = currentWorldState == WorldState.Flat2d;
+        CheckPlayerFalling(this);
+
+        if (IsMovementLocked)
+        {
+            moveInput = Vector2.zero;
+            return;
+        }
+
+        // Read the button once per rendered frame, before movement can change states.
+        if (Input.GetKeyDown(KeyCode.E)) TryFlip();
+
+        currentState.UpdateState(this);
         
         //Debug.Log(coyoteTimeCounter);
         if (Input.GetKeyDown(KeyCode.Space)) 
@@ -107,10 +127,12 @@ public class PlayerStateManager : MonoBehaviour
             jumpBufferCounter -= Time.deltaTime;
 
         // Trigger Jump State
-        if (jumpBufferCounter > 0 && coyoteTimeCounter > 0)
+        if (jumpBufferCounter > 0 && coyoteTimeCounter > 0 && !currentlyFlipping)
         {
             if (currentState != jumpState) // Don't restart if already jumping
             {
+                jumpBufferCounter = 0f;
+                coyoteTimeCounter = 0f;
                 SwitchState(jumpState);
             }
         }
@@ -124,11 +146,18 @@ public class PlayerStateManager : MonoBehaviour
             is2d = true;
         }
         //jumpState.JumpGravity(this);
-        CheckPlayerFalling(this);
     }
 
     void FixedUpdate()
     {
+        if (IsMovementLocked)
+        {
+            Vector3 horizontal = new Vector3(rb.velocity.x, 0f, rb.velocity.z);
+            horizontal = Vector3.MoveTowards(horizontal, Vector3.zero,
+                knockbackDeceleration * Time.fixedDeltaTime);
+            rb.velocity = new Vector3(horizontal.x, rb.velocity.y, is2d ? 0f : horizontal.z);
+            return;
+        }
         currentState.FixedUpdateState(this);
         
     }
@@ -145,16 +174,42 @@ public class PlayerStateManager : MonoBehaviour
     public void SwitchState(PlayerBaseState state)
     {
         
-        Debug.Log($"{currentState} → {state}");
         previousState = currentState;
         currentState.ExitState(this);
         currentState = state;
         state.EnterState(this);
     }
+
+    public bool TryFlip()
+    {
+        if (!isGrounded || currentlyFlipping || IsMovementLocked) return false;
+        SwitchState(flippingState);
+        return true;
+    }
+
+    public void LockMovement(float duration)
+    {
+        movementLockedUntil = Mathf.Max(movementLockedUntil, Time.time + Mathf.Max(0f, duration));
+        moveInput = Vector2.zero;
+    }
+
+    public void ContinueFacingRotation()
+    {
+        Quaternion targetRotation;
+        if (is2d)
+            targetRotation = facingRight ? flipLeftFlat : flipRightFlat;
+        else
+            targetRotation = facingRight ? flipLeftFlip : flipRightFlip;
+
+        transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation,
+            flipSpeed * Time.fixedDeltaTime);
+        if (Quaternion.Angle(transform.rotation, targetRotation) < 0.5f)
+            transform.rotation = targetRotation;
+    }
     
     void CheckPlayerFalling(PlayerStateManager player) {
         
-        if (Physics.CheckBox(player.groundCheck.position, player.boxSize, player.transform.rotation, player.ground)) {
+        if (dimension.IsGrounded()) {
             player.isGrounded = true;
         } else {
             player.isGrounded = false;
@@ -168,10 +223,6 @@ public class PlayerStateManager : MonoBehaviour
 
         //lets the player jump if grounded and spcae is pressed
         //changed to lets the player jump if jump buffer is > 0 and coyotetimer counter is >0
-        if (player.jumpBufferCounter > 0 && player.coyoteTimeCounter > 0f) {
-            player.jumpInput = true;
-            player.coyoteTimeCounter = 0f;
-        }
         
         if (!player.isGrounded && player.checkLastPos) {
             player.checkLastPos = false;
@@ -190,6 +241,9 @@ public class PlayerStateManager : MonoBehaviour
 
     void SavePlayer(PlayerStateManager player) {
         player.transform.position = player.lastGroundedPos;
+        player.rb.position = player.lastGroundedPos;
+        player.rb.velocity = Vector3.zero;
+        dimension.ResetDepth();
     }
     
     public bool IsObstacleInZAxis(PlayerStateManager player) {

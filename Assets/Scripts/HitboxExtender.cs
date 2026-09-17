@@ -12,17 +12,39 @@ public class HitboxExtender : MonoBehaviour
    public WorldState currentWorldState;
    
    public BoxCollider extendedHitboxCollider;
+   private PaneManager paneManager;
+   private Pane pane;
    private void Awake()
    {
-      worldStateManagerObject =  GameObject.Find("WorldStateManager");
+      worldStateManagerObject = WorldStateManager.Get().gameObject;
       worldStateManager = worldStateManagerObject.GetComponent<WorldStateManager>();
       extendedHitboxCollider = GetComponent<BoxCollider>();
+      paneManager = PaneManager.Get();
+      pane = GetComponentInParent<Pane>();
    }
 
-   private void FixedUpdate()
+   private void OnEnable()
+   {
+      worldStateManager.OnWorldStateChanged += ApplyState;
+      worldStateManager.OnFlipCompleted += ApplyState;
+      paneManager.OnCurrentPaneChanged += ApplyPane;
+      ApplyState(worldStateManager.GetWorldState());
+   }
+
+   private void OnDisable()
+   {
+      worldStateManager.OnWorldStateChanged -= ApplyState;
+      worldStateManager.OnFlipCompleted -= ApplyState;
+      paneManager.OnCurrentPaneChanged -= ApplyPane;
+      if (extendedHitboxCollider != null) extendedHitboxCollider.enabled = false;
+   }
+
+   private void ApplyPane(Pane previous, Pane current) { ApplyState(worldStateManager.GetWorldState()); }
+
+   private void ApplyState(WorldState state)
    {
       currentWorldState = worldStateManager.GetWorldState();
-      if (currentWorldState == WorldState.Flat2d)
+      if (currentWorldState == WorldState.Flat2d && !worldStateManager.IsFlipping && paneManager.IsCurrent(pane))
       {
          extendedHitboxCollider.enabled = true;
       }

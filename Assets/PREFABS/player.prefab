@@ -162,6 +162,36 @@ Transform:
   - {fileID: 5041433357484539701}
   m_Father: {fileID: 0}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &112813499795455196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6606432040429432146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9fd4e343adf1f541a019195747fac1b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  maxHp: 10
+  hp: 10
+  defense: 0
+  invulnerabilityTime: 1
+--- !u!114 &7879731822316436495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 6606432040429432146}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21e68097ca1bf2b45a22637fe2bcab7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  stompDamage: 1
+  noDamageStunDuration: 0.5
 --- !u!1 &6606432040429432146
 GameObject:
   m_ObjectHideFlags: 0
@@ -177,6 +207,8 @@ GameObject:
   - component: {fileID: 8088362401996652236}
   - component: {fileID: 5371915307657464128}
   - component: {fileID: 3588407582188116356}
+  - component: {fileID: 112813499795455196}
+  - component: {fileID: 7879731822316436495}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -352,6 +384,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   moveSpeed: 7
+  knockbackDeceleration: 28
   jumpForce: 9
   gravityMultiplier: 1.5
   fallGravity: 0
@@ -368,6 +401,8 @@ MonoBehaviour:
   rayLength: 0.3
   boxSize: {x: 0, y: 0.7, z: 0}
   isGrounded: 1
+  lastGroundedPos: {x: 0, y: 0, z: 0}
+  checkLastPos: 0
   flipped: 0
   flipSpeed: 7
   flatCam: {fileID: 0}

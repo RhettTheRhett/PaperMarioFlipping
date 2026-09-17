@@ -1,0 +1,37 @@
+---
+
+description: Token-efficient behavior for this Unity project
+
+alwaysApply: true
+
+---
+
+# Unity Project Instructions
+
+Prioritize token efficiency.
+
+- Do not run terminal commands unless they are necessary to complete the task.
+
+- Do not run shell commands merely to verify that an edit succeeded.
+
+- Do not attempt to build or run the Unity project from the terminal after normal code edits.
+
+- Do not repeatedly inspect files that have already been read unless they changed.
+
+- Read only files relevant to the current task.
+
+- Prefer targeted code search over broad repository exploration.
+
+- Do not scan the entire Assets directory unless explicitly requested.
+
+- Do not inspect Library, Temp, Logs, Obj, Builds, or generated Unity files.
+
+- Make the requested changes directly when the necessary context is already available.
+
+- Keep explanations concise.
+
+- Do not summarize every edit unless requested.
+
+- When debugging, inspect the specific error and related files before exploring unrelated code.
+
+- If Unity Editor execution is required to verify something, tell me what needs to be tested instead of attempting extensive terminal-based verification.

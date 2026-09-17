@@ -7,7 +7,7 @@ public class CoinPickup : MonoBehaviour {
     private int coins;
 
     public TextMeshProUGUI coinText;
-    private PlayerController playerController;
+    private PlayerStateManager playerController;
 
     private void Start() {
         
@@ -15,14 +15,15 @@ public class CoinPickup : MonoBehaviour {
 
     private void OnTriggerEnter(Collider other) {
         
-        playerController = GetComponent<PlayerController>();
+        playerController = GetComponent<PlayerStateManager>();
+        if (playerController == null) return;
         
         //character flipped and coin flipped
         if (playerController.is2d && other.CompareTag("CoinFlat")) {
             Destroy(other.gameObject);
             coins++;
 
-            coinText.text = coins.ToString();
+            if (coinText != null) coinText.text = coins.ToString();
 
         }
 
@@ -31,7 +32,7 @@ public class CoinPickup : MonoBehaviour {
             Destroy(other.gameObject);
             coins++;
 
-            coinText.text = coins.ToString();
+            if (coinText != null) coinText.text = coins.ToString();
 
         }
 

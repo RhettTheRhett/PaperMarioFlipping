@@ -17,7 +17,7 @@ public class PlayerJumpState : PlayerBaseState
 
     public override void UpdateState(PlayerStateManager player)
     {
-        if (!player.isGrounded) return;
+        if (!player.isGrounded || player.rb.velocity.y > 0.1f) return;
 
     if (player.is2d)
     {
@@ -58,6 +58,10 @@ public class PlayerJumpState : PlayerBaseState
                 moveZ * player.moveSpeed
             );
         }
+
+        // A jump can begin while the paper-turn animation is still in
+        // progress, so keep rotating toward the chosen facing direction.
+        player.ContinueFacingRotation();
     }
 
     public override void OnCollisionEnter(PlayerStateManager player, Collision collision)

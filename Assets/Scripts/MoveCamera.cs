@@ -16,26 +16,48 @@ public class MoveCamera : MonoBehaviour
 
     public GameObject player;
     public PlayerStateManager playerStateManager;
+    private Vector3 flipStartPosition;
+    private Quaternion flipStartRotation;
+    private bool wasFlipping;
 
     private void Awake()
     {
         camera = GetComponent<Camera>();
-        player = GameObject.Find("Player");
-        playerStateManager = player.GetComponent<PlayerStateManager>();
+        if (player == null) player = GameObject.Find("Player");
+        if (player != null) playerStateManager = player.GetComponent<PlayerStateManager>();
+        if (target == null && playerStateManager != null) target = playerStateManager.transform;
     }
 
     private void LateUpdate()
     {
-        if (playerStateManager != null)
+        if (playerStateManager != null && target != null)
         {
+            WorldStateManager world = playerStateManager.worldStateManager;
+            if (world.IsFlipping)
+            {
+                if (!wasFlipping)
+                {
+                    flipStartPosition = transform.position;
+                    flipStartRotation = transform.rotation;
+                }
+                wasFlipping = true;
+                bool flat = world.FlipTo == WorldState.Flat2d;
+                Vector3 destination = target.position + (flat ? offset : flippedOffset);
+                Quaternion rotation = flat ? Quaternion.identity : Quaternion.Euler(25f, 90f, 0f);
+                transform.position = Vector3.Lerp(flipStartPosition, destination, world.FlipProgress);
+                transform.rotation = Quaternion.Slerp(flipStartRotation, rotation, world.FlipProgress);
+                camera.orthographic = false;
+                return;
+            }
+            wasFlipping = false;
             if (playerStateManager.currentWorldState == WorldState.Flat2d)
             {
-                Debug.Log("Flat2d");
+
                 flatCam();
             }
             else if (playerStateManager.currentWorldState == WorldState.Flipped3d)
             {
-                Debug.Log("Flipped3d");
+
                 flippedCam();
             }
         }
@@ -47,10 +69,10 @@ public class MoveCamera : MonoBehaviour
         Vector3 delta = vec0;
         Quaternion lookRotation = Quaternion.Euler(0f,0f,0f);
         //x
-        float dx = target.position.x - transform.position.x;
+        float dx = target.position.x + offset.x - transform.position.x;
         if (dx > boundX || dx < -boundX)
         {
-            if (transform.position.x < target.position.x)
+            if (transform.position.x < target.position.x + offset.x)
             {
                 delta.x = dx - boundX;
             } 
@@ -60,10 +82,10 @@ public class MoveCamera : MonoBehaviour
             }
         }
         //y
-        float dy = target.position.y - transform.position.y;
-        if (dy > boundX || dy < -boundX)
+        float dy = target.position.y + offset.y - transform.position.y;
+        if (dy > boundY || dy < -boundY)
         {
-            if (transform.position.y < target.position.y)
+            if (transform.position.y < target.position.y + offset.y)
             {
                 delta.y = dy - boundY;
             } 
@@ -73,20 +95,20 @@ public class MoveCamera : MonoBehaviour
             }
         }
         //z
-        float dz = target.position.z - transform.position.z;
+        float dz = target.position.z + offset.z - transform.position.z;
         if (dz > boundZ || dz < -boundZ)
         {
-            if (transform.position.z < target.position.z)
+            if (transform.position.z < target.position.z + offset.z)
             {
-                delta.z = dz - boundZ - 10;
+                delta.z = dz;
             }
             else
             {
-                delta.z = dz + boundZ - 10;
+                delta.z = dz;
             }
         }
         
-        targetPos = transform.position + delta + offset;
+        targetPos = transform.position + delta;
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, smoothSpeed * Time.deltaTime);
     }
@@ -98,10 +120,10 @@ public class MoveCamera : MonoBehaviour
         Vector3 delta = vec0;
         Quaternion lookRotation = Quaternion.Euler(25f,90f,0f);
         //x
-        float dx = target.position.x - transform.position.x;
+        float dx = target.position.x + flippedOffset.x - transform.position.x;
         if (dx > boundX || dx < -boundX)
         {
-            if (transform.position.x < target.position.x)
+            if (transform.position.x < target.position.x + flippedOffset.x)
             {
                 delta.x = dx - boundX;
             } 
@@ -111,10 +133,10 @@ public class MoveCamera : MonoBehaviour
             }
         }
         //y
-        float dy = target.position.y - transform.position.y;
-        if (dy > boundX || dy < -boundX)
+        float dy = target.position.y + flippedOffset.y - transform.position.y;
+        if (dy > boundY || dy < -boundY)
         {
-            if (transform.position.y < target.position.y)
+            if (transform.position.y < target.position.y + flippedOffset.y)
             {
                 delta.y = dy - boundY;
             } 
@@ -124,10 +146,10 @@ public class MoveCamera : MonoBehaviour
             }
         }
         //z
-        float dz = target.position.z - transform.position.z;
+        float dz = target.position.z + flippedOffset.z - transform.position.z;
         if (dz > boundZ || dz < -boundZ)
         {
-            if (transform.position.z < target.position.z)
+            if (transform.position.z < target.position.z + flippedOffset.z)
             {
                 delta.z = dz - boundZ;
             }
@@ -137,7 +159,7 @@ public class MoveCamera : MonoBehaviour
             }
         }
         
-        targetPos = transform.position + delta + flippedOffset;
+        targetPos = transform.position + delta;
         transform.position = Vector3.Lerp(transform.position, targetPos, smoothSpeed * Time.deltaTime);
         transform.rotation = Quaternion.Lerp(transform.rotation, lookRotation, smoothSpeed * Time.deltaTime);
     }

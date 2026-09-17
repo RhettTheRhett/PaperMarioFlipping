@@ -25,6 +25,7 @@ public class PlayerGravity : MonoBehaviour
     // Update is called once per frame
     void Update()
     {
+        if (playerStateManager.currentlyFlipping) return;
         JumpGravity(playerStateManager);
     }
     

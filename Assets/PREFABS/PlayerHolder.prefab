@@ -294,6 +294,8 @@ GameObject:
   - component: {fileID: 9652229940636514}
   - component: {fileID: 1415105684368831863}
   - component: {fileID: 5050138431724190846}
+  - component: {fileID: 712813499795455196}
+  - component: {fileID: 6879731822316436495}
   m_Layer: 0
   m_Name: Player
   m_TagString: Player
@@ -318,6 +320,34 @@ Transform:
   - {fileID: 3238843203309583751}
   m_Father: {fileID: 4800238840079020485}
   m_LocalEulerAnglesHint: {x: 0, y: 0, z: 0}
+--- !u!114 &712813499795455196
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7412103943201456587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: f9fd4e343adf1f541a019195747fac1b, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  maxHp: 10
+  hp: 10
+  invulnerabilityTime: 1
+--- !u!114 &6879731822316436495
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 7412103943201456587}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: 21e68097ca1bf2b45a22637fe2bcab7e, type: 3}
+  m_Name:
+  m_EditorClassIdentifier:
+  stompDamage: 1
 --- !u!54 &1610643529408657688
 Rigidbody:
   m_ObjectHideFlags: 0
