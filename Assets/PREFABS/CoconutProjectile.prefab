@@ -154,6 +154,8 @@ MonoBehaviour:
   knockbackUpwardForce: 2
   movementLockTime: 0.2
   stompBounceSpeed: 7
+  stompHorizontalPush: 1.5
+  stompHorizontalDuration: 0.3
   stompHeightTolerance: 0.8
   environmentLayers:
     serializedVersion: 2

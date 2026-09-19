@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Collider), typeof(EnemyHealth))]
 [RequireComponent(typeof(EnemyDimension), typeof(EnemyStun))]
@@ -21,6 +22,9 @@ public class EnemyContactCombat : MonoBehaviour
     [Header("Stomp")]
     [SerializeField] private StompResponse stompResponse = StompResponse.TakeDamageAndBounce;
     [SerializeField, Min(0f)] private float stompBounceSpeed = 7f;
+    [SerializeField, Min(0f)] private float stompHorizontalPush = 1.5f;
+    [FormerlySerializedAs("stompControlLockTime")]
+    [SerializeField, Min(0f)] private float stompHorizontalDuration = 0.3f;
     [SerializeField, Min(0f)] private float stompStunDuration = 0.5f;
     [SerializeField, Min(0f)] private float stompHeightTolerance = 0.15f;
 
@@ -43,10 +47,23 @@ public class EnemyContactCombat : MonoBehaviour
 
     private void OnCollisionEnter(Collision collision) { HandlePlayerContact(collision); }
     private void OnCollisionStay(Collision collision) { HandlePlayerContact(collision); }
+    private void OnDisable() { activeStompers.Clear(); }
 
     private void OnCollisionExit(Collision collision)
     {
-        if (collision.rigidbody != null) activeStompers.Remove(collision.rigidbody);
+        PlayerHealth playerHealth = collision.collider.GetComponentInParent<PlayerHealth>();
+        if (playerHealth == null) return;
+
+        Rigidbody playerBody = playerHealth.GetComponent<Rigidbody>();
+        if (playerBody == null || !activeStompers.Contains(playerBody)) return;
+
+        // The player has two solid capsule colliders. Keep stomp protection
+        // until both have actually cleared this enemy.
+        foreach (Collider playerCollider in playerHealth.GetComponentsInChildren<Collider>())
+            if (playerCollider.enabled && !playerCollider.isTrigger &&
+                hitbox.bounds.Intersects(playerCollider.bounds)) return;
+
+        activeStompers.Remove(playerBody);
     }
 
     private void HandlePlayerContact(Collision collision)
@@ -61,6 +78,10 @@ public class EnemyContactCombat : MonoBehaviour
         Rigidbody playerBody = playerHealth.GetComponent<Rigidbody>();
         Collider playerCollider = collision.collider;
         if (playerBody == null || playerCollider == null) return;
+
+        // Ignore every callback from the same contact until the bouncing
+        // player has completely cleared the enemy.
+        if (activeStompers.Contains(playerBody)) return;
 
         bool stomped = IsStomp(collision, playerBody);
         if (stomped && stompResponse != StompResponse.HurtPlayer)
@@ -81,9 +102,8 @@ public class EnemyContactCombat : MonoBehaviour
                 stunDuration = Mathf.Max(stunDuration, playerDamage.NoDamageStunDuration);
             stun.Stun(stunDuration);
 
-            Vector3 velocity = playerBody.velocity;
-            velocity.y = Mathf.Max(velocity.y, stompBounceSpeed);
-            playerBody.velocity = velocity;
+            PlayerBounce.Apply(playerBody, hitbox.bounds.center, stompBounceSpeed,
+                stompHorizontalPush, stompHorizontalDuration);
             return;
         }
 
@@ -93,15 +113,19 @@ public class EnemyContactCombat : MonoBehaviour
 
     private bool IsStomp(Collision collision, Rigidbody playerBody)
     {
-        if (playerBody.velocity.y > 0.05f) return false;
+        // Standing or walking beside a short enemy is not a stomp. The
+        // relative velocity preserves the impact direction when the physics
+        // solver has already reduced the player's downward velocity.
+        bool wasMovingDown = playerBody.velocity.y < -0.05f ||
+                             collision.relativeVelocity.y < -0.05f;
+        if (!wasMovingDown) return false;
 
         Bounds enemyBounds = hitbox.bounds;
         bool playerIsAbove = playerBody.worldCenterOfMass.y > enemyBounds.center.y;
         if (!playerIsAbove) return false;
 
         foreach (ContactPoint contact in collision.contacts)
-            if (contact.point.y >= enemyBounds.center.y - stompHeightTolerance &&
-                Mathf.Abs(contact.normal.y) >= 0.5f) return true;
+            if (contact.point.y >= enemyBounds.center.y - stompHeightTolerance) return true;
         return false;
     }
 }

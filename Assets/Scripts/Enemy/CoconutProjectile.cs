@@ -1,4 +1,5 @@
 using UnityEngine;
+using UnityEngine.Serialization;
 
 [RequireComponent(typeof(Rigidbody), typeof(BoxCollider), typeof(SpriteRenderer))]
 public class CoconutProjectile : MonoBehaviour
@@ -10,6 +11,9 @@ public class CoconutProjectile : MonoBehaviour
     [SerializeField, Min(0f)] private float knockbackUpwardForce = 2f;
     [SerializeField, Min(0f)] private float movementLockTime = 0.2f;
     [SerializeField, Min(0f)] private float stompBounceSpeed = 7f;
+    [SerializeField, Min(0f)] private float stompHorizontalPush = 1.5f;
+    [FormerlySerializedAs("stompControlLockTime")]
+    [SerializeField, Min(0f)] private float stompHorizontalDuration = 0.3f;
     [SerializeField, Min(0f)] private float stompHeightTolerance = 0.08f;
     [SerializeField] private LayerMask environmentLayers = 1 << 6;
 
@@ -71,9 +75,8 @@ public class CoconutProjectile : MonoBehaviour
 
             if (stomped)
             {
-                Vector3 velocity = playerBody.velocity;
-                velocity.y = Mathf.Max(velocity.y, stompBounceSpeed);
-                playerBody.velocity = velocity;
+                PlayerBounce.Apply(playerBody, transform.position, stompBounceSpeed,
+                    stompHorizontalPush, stompHorizontalDuration);
             }
             else
             {

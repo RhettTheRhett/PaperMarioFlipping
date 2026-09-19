@@ -240,6 +240,8 @@ MonoBehaviour:
   movementLockTime: 0.2
   stompResponse: 0
   stompBounceSpeed: 7
+  stompHorizontalPush: 1.5
+  stompHorizontalDuration: 0.3
   stompHeightTolerance: 0.15
 --- !u!114 &720100000000000018
 MonoBehaviour:
